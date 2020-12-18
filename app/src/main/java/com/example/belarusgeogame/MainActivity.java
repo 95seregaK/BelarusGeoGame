@@ -1,8 +1,9 @@
 package com.example.belarusgeogame;
 
+import android.graphics.Path;
+import android.graphics.PointF;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -19,16 +20,18 @@ import java.io.InputStream;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private TextView textView;
+    private MyView myView;
+    private int scale = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Path path = new Path();
+        myView = findViewById(R.id.my_view);
 
-        textView = findViewById(R.id.text_view);
         try {
-            InputStream stream = getResources().openRawResource(R.raw.coordinates);
+            InputStream stream = getResources().openRawResource(R.raw.europe);
 
             GeoJSONObject geoJSON = GeoJSON.parse(stream);
             String text = "";
@@ -40,21 +43,29 @@ public class MainActivity extends AppCompatActivity {
                     Point point = (Point) feature.getGeometry();
                     point.getPosition().getLatitude();
                     text += point.getPosition().getLatitude() + " " + point.getPosition().getLongitude() + " " + point.getPosition().getAltitude();
-                }
-                else if(feature.getGeometry().getType() == "Polygon"){
+                } else if (feature.getGeometry().getType() == "Polygon") {
                     Polygon polygon = (Polygon) feature.getGeometry();
                     List<Ring> rings = polygon.getRings();
                     for (Ring ring : rings) {
+                        PointF point = project(ring.getPositions().get(0));
+                        path.moveTo(point.x, point.y);
                         for (Position position : ring.getPositions()) {
-                            position.getLatitude();
+                            point = project(position);
+                            path.lineTo(point.x, point.y);
                         }
                     }
                 }
             }
-            textView.setText(text);
+            //textView.setText(text);
+            myView.addPath(path);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public PointF project(Position position) {
+        float x = (float) (scale * (position.getLongitude() - 23));
+        float y = (float) (1.5 * scale * (57 - position.getLatitude()));
+        return new PointF(x, y);
     }
 }
