@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 
 public class MyView extends View {
     private Paint paint;
+    private Paint paintFill;
     private Path path;
     private float scale = 1, dx, dy;
 
@@ -37,6 +38,8 @@ public class MyView extends View {
         if (path != null) {
             canvas.translate(dx, dy);
             canvas.scale(scale, scale);
+
+            canvas.drawPath(path, paintFill);
             canvas.drawPath(path, paint);
 
         }
@@ -49,9 +52,12 @@ public class MyView extends View {
     public void addPath(Path path) {
         this.path = path;
         paint = new Paint();
+        paintFill = new Paint();
         paint.setColor(Color.BLUE);
-        paint.setStrokeWidth(1);
+        paintFill.setColor(Color.MAGENTA);
+        paint.setStrokeWidth(2);
         paint.setStyle(Paint.Style.STROKE);
+        paintFill.setStyle(Paint.Style.FILL);
         invalidate();
     }
 
