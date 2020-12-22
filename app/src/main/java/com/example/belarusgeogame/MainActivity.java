@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String STRING_NAME = /*"STATE_NAME"*/"admin";
     private MapView mapView;
     private View enlargeBtn, decreaseBtn;
     private TextView textCountry;
@@ -90,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             });
         } catch (Exception e) {
+            Log.d("Exception",e.getMessage());
             e.printStackTrace();
         }
     }
@@ -149,8 +151,9 @@ public class MainActivity extends AppCompatActivity {
         FeatureCollection featureCollection = (FeatureCollection) (geoJSON);
         List<Feature> features = featureCollection.getFeatures();
         int p = 0;
+
         for (Feature feature : features) {
-            Country country = new Country(feature.getProperties().getString("sovereignt"));
+            Country country = new Country(feature.getProperties().getString(STRING_NAME));
             List<PointF[]> border = new ArrayList<>();
             Log.d("Country", country.getName() + " " + feature.getGeometry().getType());
               /*  if (feature.getGeometry().getType() == "Point") {

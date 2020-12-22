@@ -120,12 +120,12 @@ public class MapView extends View {
         private float x = 0, y = 0, dx, dy, eps = 0.1f;
         private boolean move = false;
 
-        public void onClick() {
+        public void onClick(float x, float y) {
 //            Log.d("onClick", "count="+count);
             boolean b = false;
             int s = 0;
             for (Country country : countries) {
-                PointF p = new PointF(x - dX, y - dY);
+                PointF p = new PointF(x, y);
                 b = Country.pip(p, country.getBorder());
                 s++;
                 if (b && onGeoObjectSelectedListener != null) {
@@ -163,9 +163,10 @@ public class MapView extends View {
                         invalidate();
                         move = true;
                     }
+                    break;
                 case MotionEvent.ACTION_UP:
                     if (!move) {
-                        onClick();
+                        onClick(x-dX, y-dY);
                     }
                     break;
             }
