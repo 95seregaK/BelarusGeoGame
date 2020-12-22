@@ -1,20 +1,17 @@
-package com.example.belarusgeogame;
+package com.example.belarusgeogame.geoobjects;
 
 import android.graphics.Path;
 import android.graphics.PointF;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Country {
+public class Country extends GeoObject {
     private List<PointF[]> border;
     private List<Path> paths;
-    private String name;
-
 
     public Country(String name) {
-        setName(name);
+        super(name);
     }
 
     public static boolean pip(PointF p, PointF[] polygon) {
@@ -22,9 +19,12 @@ public class Country {
         int s = 0;
         for (int i = 0; i < n - 1; i++) {
             float dy = polygon[i + 1].y - polygon[i].y;
-            float t = (p.y - polygon[i].y) / dy;
-            float x = polygon[i].x + t * (polygon[i + 1].x - polygon[i].x);
-            if (t > 0 && t < 1 && x > p.x) s++;
+            if (dy == 0) {
+            } else {
+                float t = (p.y - polygon[i].y) / dy;
+                float x = polygon[i].x + t * (polygon[i + 1].x - polygon[i].x);
+                if (t >= 0 && t < 1 && x > p.x) s++;
+            }
         }
         //Log.d("PIP", " s=" + s);
         return s % 2 == 1;
@@ -52,7 +52,7 @@ public class Country {
             int n = polygon.length;
             for (int i = 1; i < n; i++) {
                 path.lineTo(polygon[i].x, polygon[i].y);
-               //Log.d("coordinates", polygon[i].x + " " + polygon[i].y);
+                //Log.d("coordinates", polygon[i].x + " " + polygon[i].y);
             }
         }
         return paths;
@@ -66,20 +66,22 @@ public class Country {
         this.paths = paths;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    private void setName(String name) {
-        this.name = name;
-    }
-
     public List<PointF[]> getBorder() {
         return border;
     }
 
     public void setBorder(List<PointF[]> border) {
         this.border = border;
+        paths = computePath(border);
+    }
+
+    public void scale(float scale) {
+        for (PointF[] points : border) {
+            for (int i = 0; i < points.length; i++) {
+                points[i].x*=scale;
+                points[i].y*=scale;
+            }
+        }
         paths = computePath(border);
     }
 }
