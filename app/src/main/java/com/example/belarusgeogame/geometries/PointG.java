@@ -1,13 +1,18 @@
 package com.example.belarusgeogame.geometries;
 
 import android.graphics.Path;
+import android.graphics.PointF;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Point extends Geometry {
+public class PointG extends Geometry {
     protected android.graphics.PointF point;
-    protected float radius = 10;
+    protected float radius = 16;
+
+    public PointG(PointF p) {
+        point = new PointF(p.x, p.y);
+    }
 
     @Override
     public void scale(float scale) {
@@ -25,9 +30,14 @@ public class Point extends Geometry {
     }
 
     @Override
-    public boolean contains(android.graphics.PointF p) {
+    public boolean contains(PointF p) {
         float dx = p.x - point.x;
         float dy = p.y - point.y;
         return dx * dx + dy * dy < radius * radius;
     }
+
+    public void setPosition(PointF p) {
+        point = p;
+    }
+
 }

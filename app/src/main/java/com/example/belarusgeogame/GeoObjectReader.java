@@ -12,7 +12,7 @@ import com.cocoahero.android.geojson.Point;
 import com.cocoahero.android.geojson.Polygon;
 import com.cocoahero.android.geojson.Position;
 import com.cocoahero.android.geojson.Ring;
-import com.example.belarusgeogame.geometries.PolygonSet;
+import com.example.belarusgeogame.geometries.PolygonG;
 import com.example.belarusgeogame.geoobjects.Country;
 import com.example.belarusgeogame.geoobjects.GeoObject;
 
@@ -30,25 +30,25 @@ public class GeoObjectReader {
     private static float la0 = (float) toRad(27.5);
     private static float fi0 = (float) toRad(53.8);
 
+    public static double toRad(double fi) {
+        return fi / 180 * Math.PI;
+    }
+
     public static PointF project(double la, double fi) {
-        float scale = 1000;
+        float scale = 2000;
         double x = (la - la0) * Math.cos(fi0);
         double y = fi - fi0;
         return new PointF((float) x * scale, -(float) y * scale);
     }
 
-    public static double toRad(double fi) {
-        return fi / 180 * Math.PI;
-    }
-
-    /* public static Point project(double la, double fi) {
+    /* public static PointG project(double la, double fi) {
          float scale = 1000;
          double x = Math.sin((la - la0) * Math.sin(fi)) / Math.tan(fi);
          double y = fi - fi0 + (1 - Math.cos((la - la0) * Math.sin(fi))) / Math.tan(fi);
-         return new Point((float) x * scale, -(float) y * scale);
+         return new PointG((float) x * scale, -(float) y * scale);
      }*/
 
-    /*public static Point project(double la, double fi) {
+    /*public static PointG project(double la, double fi) {
         float scale = 1000;
         double a = Math.cos(la - la0);
         double b = Math.sin(la - la0);
@@ -59,7 +59,7 @@ public class GeoObjectReader {
         double k = Math.sqrt(2 / (1 + f * d + e * c * a));
         double x = k * c * b;
         double y = k * (e * d - f * c * a);
-        return new Point((float) x * scale, -(float) y * scale);
+        return new PointG((float) x * scale, -(float) y * scale);
     }*/
 
     public PointF project(Position position) {
@@ -87,10 +87,10 @@ public class GeoObjectReader {
             String type = feature.getProperties().getString(STRING_TYPE);
             String name = feature.getProperties().getString(STRING_NAME);
             Log.d("Country", name + " " + type);
-            if (type == "Sovereign country" || type == "Country" || true) {
+            if (type.compareTo("Sovereign country") == 0 || type.compareTo("Country") == 0) {
                 GeoObject geoObject = new Country(feature.getProperties().getString(STRING_NAME));
                 List<PointF[]> polygonsF = new ArrayList<>();
-                if (feature.getGeometry().getType() == "Point") {
+                if (feature.getGeometry().getType() == "PointG") {
                     Point point = (Point) feature.getGeometry();
                     point.getPosition().getLatitude();
                 } else if (feature.getGeometry().getType() == "Polygon") {
@@ -102,7 +102,7 @@ public class GeoObjectReader {
                         readPolygon(polygon, polygonsF);
                     }
                 }
-                geoObject.setGeometry(new PolygonSet(polygonsF));
+                geoObject.setGeometry(new PolygonG(polygonsF));
                 geoObjects.add(geoObject);
             }
         }

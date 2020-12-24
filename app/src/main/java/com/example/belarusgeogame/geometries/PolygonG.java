@@ -2,17 +2,22 @@ package com.example.belarusgeogame.geometries;
 
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PolygonSet extends Geometry {
-    private int numberCount;
+public class PolygonG  extends Pointable {
+    private static final float MIN_SQUARE = 400;
+    private int pointCount;
+    private float square;
     private List<PointF[]> polygons;
 
 
-    public PolygonSet(List<PointF[]> polygons) {
+    public PolygonG(List<PointF[]> polygons) {
         this.polygons = polygons;
+        square = computeSquare();
+        computeCentre();
     }
 
     public static boolean pip(PointF p, PointF[] polygon) {
@@ -32,13 +37,44 @@ public class PolygonSet extends Geometry {
     }
 
     @Override
-    public void scale(float scale) {
+    public void computeCentre() {
+        double x = 0, y = 0;
+        int n = 0;
         for (PointF[] polygon : polygons) {
             for (int i = 0; i < polygon.length; i++) {
-                polygon[i].x *= scale;
-                polygon[i].y *= scale;
+                x += polygon[i].x;
+                y += polygon[i].y;
+                n++;
             }
         }
+        x /= n;
+        y /= n;
+        centre.setPosition(new PointF((float) x, (float) y));
+    }
+
+    @Override
+    public void scale(float sc) {
+        for (PointF[] polygon : polygons) {
+            for (int i = 0; i < polygon.length; i++) {
+                polygon[i].x *= sc;
+                polygon[i].y *= sc;
+            }
+        }
+        square = computeSquare();
+        centre.scale(sc);
+    }
+
+    private float computeSquare() {
+        float square = 0;
+        for (PointF[] polygon : polygons) {
+            float s = polygon[polygon.length - 1].x * polygon[0].y
+                    - polygon[0].x * polygon[polygon.length - 1].y;
+            for (int i = 0; i < polygon.length - 1; i++) {
+                s += polygon[i].x * polygon[i + 1].y - polygon[i + 1].x * polygon[i].y;
+            }
+            square += s;
+        }
+        return Math.abs(square / 2);
     }
 
     @Override
@@ -59,15 +95,30 @@ public class PolygonSet extends Geometry {
                 //Log.d("coordinates", polygon[i].x + " " + polygon[i].y);
             }
         }
+        if (reflectedAsPoint()) {
+            paths.add(centre.computePath().get(0));
+        }
+        Log.d("Square", "square = " + computeSquare());
         return paths;
     }
 
     @Override
     public boolean contains(PointF p) {
         int s = 0;
+        if (reflectedAsPoint() && centre.contains(p))
+            return true;
         for (PointF[] polygon : polygons) {
             if (pip(p, polygon)) s++;
         }
         return s % 2 == 1;
+    }
+
+    @Override
+    public boolean reflectedAsPoint() {
+        return square < MIN_SQUARE;
+    }
+
+    public float getSquare() {
+        return square;
     }
 }

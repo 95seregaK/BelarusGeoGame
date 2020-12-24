@@ -1,7 +1,6 @@
 package com.example.belarusgeogame.geoobjects;
 
 import android.graphics.Path;
-import android.graphics.PointF;
 
 import com.example.belarusgeogame.geometries.Geometry;
 
@@ -41,4 +40,5 @@ public abstract class GeoObject {
     public List<Path> getPaths() {
         return paths;
     }
+
 }

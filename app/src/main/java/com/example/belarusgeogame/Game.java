@@ -9,6 +9,8 @@ import android.widget.Toast;
 import com.example.belarusgeogame.geoobjects.GeoObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -22,15 +24,23 @@ public class Game {
     private AttemptCallback attemptCallback;
     private Toast toast;
     private int attempt = 0;
+    private boolean active = false;
 
     public Game(List<GeoObject> geoObjects, MapView mapView) {
         allGeoObjects = new ArrayList<>(geoObjects);
+        /*Collections.sort(allGeoObjects, new Comparator<GeoObject>() {
+            @Override
+            public int compare(GeoObject o1, GeoObject o2) {
+                return o1.getPriority()-o2.getPriority();
+            }
+        });*/
         activeGeoObjects = new ArrayList<>(geoObjects);
         guessedGeoObjects = new ArrayList<>();
         this.mapView = mapView;
         random = new Random();
         mapView.setOnMapClickListener((p) -> {
-            onAttempt(p);
+            if (active)
+                onAttempt(p);
         });
         defineDrawers();
         toast = Toast.makeText(mapView.getContext(), "Hello", Toast.LENGTH_SHORT);
@@ -38,10 +48,14 @@ public class Game {
     }
 
     public void startGame() {
+        active = true;
         currentGeoObject = nextGeoObject();
         toast.show();
     }
 
+    private void endGame() {
+        active = false;
+    }
 
     public GeoObject nextGeoObject() {
         int n = activeGeoObjects.size();
@@ -81,16 +95,12 @@ public class Game {
         activeGeoObjects.remove(currentGeoObject);
         guessedGeoObjects.add(currentGeoObject);
         currentGeoObject = nextGeoObject();
-        if(currentGeoObject==null){
+        if (currentGeoObject == null) {
             endGame();
             if (attemptCallback != null) attemptCallback.callback(CODE_END);
-        }else {
+        } else {
             if (attemptCallback != null) attemptCallback.callback(CODE_SUCCESS);
         }
-
-    }
-
-    private void endGame() {
 
     }
 
@@ -108,7 +118,6 @@ public class Game {
         for (GeoObject geoObject : allGeoObjects) {
             geoObject.scale(s);
         }
-        ;
         mapView.scale(s);
     }
 
@@ -120,7 +129,7 @@ public class Game {
 
         Paint paintFill = new Paint();
         paintFill.setStyle(Paint.Style.FILL);
-        paintFill.setColor(Color.GREEN);
+        paintFill.setColor(Color.YELLOW);
         mapView.addDrawer(new Drawer(activeGeoObjects, paintBorder, paintFill));
 
         paintFill = new Paint();
