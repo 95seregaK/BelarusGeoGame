@@ -12,12 +12,14 @@ public class PointG extends Geometry {
 
     public PointG(PointF p) {
         point = new PointF(p.x, p.y);
+        paths=computePath();
     }
 
     @Override
     public void scale(float scale) {
         point.x *= scale;
         point.y *= scale;
+        paths = computePath();
     }
 
     @Override
@@ -34,6 +36,16 @@ public class PointG extends Geometry {
         float dx = p.x - point.x;
         float dy = p.y - point.y;
         return dx * dx + dy * dy < radius * radius;
+    }
+
+    @Override
+    public boolean isTouchable() {
+        return false;
+    }
+
+    @Override
+    public PointG computeCentre() {
+        return null;
     }
 
     public void setPosition(PointF p) {

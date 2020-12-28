@@ -12,6 +12,8 @@ import com.cocoahero.android.geojson.Point;
 import com.cocoahero.android.geojson.Polygon;
 import com.cocoahero.android.geojson.Position;
 import com.cocoahero.android.geojson.Ring;
+import com.example.belarusgeogame.geometries.Geometry;
+import com.example.belarusgeogame.geometries.PointG;
 import com.example.belarusgeogame.geometries.PolygonG;
 import com.example.belarusgeogame.geoobjects.Country;
 import com.example.belarusgeogame.geoobjects.GeoObject;
@@ -27,8 +29,10 @@ public class GeoObjectReader {
     private static final String STRING_NAME = /*"STATE_NAME"*/"admin";
     private static final String STRING_TYPE = "type";
     private static float scale = 1;
-    private static float la0 = (float) toRad(27.5);
-    private static float fi0 = (float) toRad(53.8);
+    /*private static float la0 = (float) toRad(27.5);
+    private static float fi0 = (float) toRad(53.8);*/
+    private static float la0 = (float) toRad(0);
+    private static float fi0 = (float) toRad(0);
 
     public static double toRad(double fi) {
         return fi / 180 * Math.PI;
@@ -66,8 +70,9 @@ public class GeoObjectReader {
         return project(toRad(position.getLongitude()), toRad(position.getLatitude()));
     }
 
-    public void readPolygon(com.cocoahero.android.geojson.Polygon polygon, List<PointF[]> dest) {
+    public PolygonG readPolygon(Polygon polygon) {
         List<Ring> rings = polygon.getRings();
+        List<PointF[]> dest = new ArrayList<>();
         for (Ring ring : rings) {
             List<Position> positions = ring.getPositions();
             int n = positions.size();
@@ -77,6 +82,31 @@ public class GeoObjectReader {
             }
             dest.add(points);
         }
+        return new PolygonG(dest);
+    }
+
+    public PolygonG readMultiPolygon(MultiPolygon multiPolygon) {
+        List<Polygon> polygons = multiPolygon.getPolygons();
+        List<PointF[]> dest = new ArrayList<>();
+        for (Polygon polygon : polygons) {
+            List<Ring> rings = polygon.getRings();
+            for (Ring ring : rings) {
+                List<Position> positions = ring.getPositions();
+                int n = positions.size();
+                PointF[] points = new PointF[n];
+                for (int i = 0; i < positions.size(); i++) {
+                    points[i] = project(positions.get(i));
+                }
+                dest.add(points);
+            }
+        }
+        return new PolygonG(dest);
+    }
+
+    public PointG readPoint(Point point) {
+        Position position = point.getPosition();
+        PointF p = project(position);
+        return new PointG(p);
     }
 
     public void readGeoObjects(InputStream stream, List<GeoObject> geoObjects) throws JSONException, IOException {
@@ -89,20 +119,15 @@ public class GeoObjectReader {
             Log.d("Country", name + " " + type);
             if (type.compareTo("Sovereign country") == 0 || type.compareTo("Country") == 0) {
                 GeoObject geoObject = new Country(feature.getProperties().getString(STRING_NAME));
-                List<PointF[]> polygonsF = new ArrayList<>();
+                Geometry geometry = null;
                 if (feature.getGeometry().getType() == "PointG") {
-                    Point point = (Point) feature.getGeometry();
-                    point.getPosition().getLatitude();
+                    geometry = readPoint((Point) feature.getGeometry());
                 } else if (feature.getGeometry().getType() == "Polygon") {
-                    readPolygon((Polygon) feature.getGeometry(), polygonsF);
+                    geometry = readPolygon((Polygon) feature.getGeometry());
                 } else if (feature.getGeometry().getType() == "MultiPolygon") {
-                    MultiPolygon multiPolygon = (MultiPolygon) feature.getGeometry();
-                    List<Polygon> polygons = multiPolygon.getPolygons();
-                    for (Polygon polygon : polygons) {
-                        readPolygon(polygon, polygonsF);
-                    }
+                    geometry = readMultiPolygon((MultiPolygon) feature.getGeometry());
                 }
-                geoObject.setGeometry(new PolygonG(polygonsF));
+                geoObject.setGeometry(geometry);
                 geoObjects.add(geoObject);
             }
         }

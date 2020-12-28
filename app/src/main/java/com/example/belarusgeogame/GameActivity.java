@@ -15,16 +15,18 @@ import java.util.List;
 public class GameActivity extends AppCompatActivity {
     private MapView mapView;
     private View enlargeBtn, decreaseBtn;
-    private TextView textCurrentGeoobject;
+    private TextView textCurrentGeoObject;
     private List<GeoObject> geoObjects;
     private Game game;
+    private int fileId = R.raw.world_m;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         mapView = findViewById(R.id.my_view);
-        textCurrentGeoobject = findViewById(R.id.text_current_geo);
+        textCurrentGeoObject = findViewById(R.id.text_current_geo);
         enlargeBtn = findViewById(R.id.enlarge);
         decreaseBtn = findViewById(R.id.decrease);
         enlargeBtn.setOnClickListener(v -> {
@@ -36,7 +38,7 @@ public class GameActivity extends AppCompatActivity {
         geoObjects = new ArrayList<>();
         GeoObjectReader reader = new GeoObjectReader();
         try {
-            reader.readGeoObjects(getResources().openRawResource(R.raw.europe_m), geoObjects);
+            reader.readGeoObjects(getResources().openRawResource(fileId), geoObjects);
         } catch (Exception e) {
             Log.d("MyException", e.getMessage());
             e.printStackTrace();
@@ -44,12 +46,12 @@ public class GameActivity extends AppCompatActivity {
         game = new Game(geoObjects, mapView);
         game.setAttemptCallback((res) -> {
             if (res != Game.CODE_END)
-                textCurrentGeoobject.setText(game.getCurrentGeoObject().getName());
-            else textCurrentGeoobject.setText("Game over!");
+                textCurrentGeoObject.setText(game.getCurrentGeoObject().getName());
+            else textCurrentGeoObject.setText("Game over!");
         });
         game.startGame();
         if (game.getCurrentGeoObject() != null)
-            textCurrentGeoobject.setText(game.getCurrentGeoObject().getName());
+            textCurrentGeoObject.setText(game.getCurrentGeoObject().getName());
     }
 
 }

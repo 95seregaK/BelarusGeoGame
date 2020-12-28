@@ -9,15 +9,14 @@ import android.widget.Toast;
 import com.example.belarusgeogame.geoobjects.GeoObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
 public class Game {
     public static final int CODE_END = 2;
     public static final int CODE_SUCCESS = 1;
-    private final List<GeoObject> allGeoObjects, activeGeoObjects, guessedGeoObjects;
+    public static final int CODE_UNSUCCESS = 0;
+    private final List<GeoObject> allGeoObjects, activeGeoObjects, guessedGeoObjects, unguessedGeoObjects;
     private final MapView mapView;
     private GeoObject currentGeoObject;
     private Random random;
@@ -36,6 +35,7 @@ public class Game {
         });*/
         activeGeoObjects = new ArrayList<>(geoObjects);
         guessedGeoObjects = new ArrayList<>();
+        unguessedGeoObjects = new ArrayList<>();
         this.mapView = mapView;
         random = new Random();
         mapView.setOnMapClickListener((p) -> {
@@ -69,8 +69,14 @@ public class Game {
     }
 
     private void onAttempt(PointF p) {
-        if (attempt == 2 || currentGeoObject.getGeometry().contains(p)) {
+
+        if (currentGeoObject.displayedAsPoint() && currentGeoObject.getCentre().contains(p)
+                || currentGeoObject.getGeometry().contains(p)) {
             onSuccess();
+            attempt = 0;
+            mapView.invalidate();
+        } else if (attempt == 2) {
+            onFault();
             attempt = 0;
             mapView.invalidate();
         } else {
@@ -91,7 +97,7 @@ public class Game {
     }
 
     private void onSuccess() {
-        showToast("Success");
+        showToast("Success!");
         activeGeoObjects.remove(currentGeoObject);
         guessedGeoObjects.add(currentGeoObject);
         currentGeoObject = nextGeoObject();
@@ -101,10 +107,31 @@ public class Game {
         } else {
             if (attemptCallback != null) attemptCallback.callback(CODE_SUCCESS);
         }
+    }
+
+    private void onFault() {
+        showToast("UnSuccess!");
+        activeGeoObjects.remove(currentGeoObject);
+        unguessedGeoObjects.add(currentGeoObject);
+        currentGeoObject = nextGeoObject();
+        if (currentGeoObject == null) {
+            endGame();
+            if (attemptCallback != null) attemptCallback.callback(CODE_END);
+        } else {
+            if (attemptCallback != null) attemptCallback.callback(CODE_UNSUCCESS);
+        }
 
     }
 
     public GeoObject findGeoObject(PointF p, List<GeoObject> geoObjects) {
+
+        for (int i = geoObjects.size() - 1; i >= 0; i--) {
+            GeoObject geoObject = geoObjects.get(i);
+            if (geoObject.displayedAsPoint() && geoObject.getCentre().contains(p)) {
+                Log.d("findGeoObject", geoObject.getName());
+                return geoObject;
+            }
+        }
         for (GeoObject geoObject : geoObjects) {
             if (geoObject.getGeometry().contains(p)) {
                 Log.d("findGeoObject", geoObject.getName());
@@ -129,13 +156,18 @@ public class Game {
 
         Paint paintFill = new Paint();
         paintFill.setStyle(Paint.Style.FILL);
-        paintFill.setColor(Color.YELLOW);
-        mapView.addDrawer(new Drawer(activeGeoObjects, paintBorder, paintFill));
+        paintFill.setColor(Color.GREEN);
+        mapView.addDrawer(new DrawableGeoList(guessedGeoObjects, paintBorder, paintFill));
 
         paintFill = new Paint();
         paintFill.setStyle(Paint.Style.FILL);
         paintFill.setColor(Color.RED);
-        mapView.addDrawer(new Drawer(guessedGeoObjects, paintBorder, paintFill));
+        mapView.addDrawer(new DrawableGeoList(unguessedGeoObjects, paintBorder, paintFill));
+
+        paintFill = new Paint();
+        paintFill.setStyle(Paint.Style.FILL);
+        paintFill.setColor(Color.YELLOW);
+        mapView.addDrawer(new DrawableGeoList(activeGeoObjects, paintBorder, paintFill));
     }
 
     public void setAttemptCallback(AttemptCallback callback) {

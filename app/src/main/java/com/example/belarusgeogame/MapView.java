@@ -2,8 +2,6 @@ package com.example.belarusgeogame;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -11,13 +9,11 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.example.belarusgeogame.geoobjects.GeoObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class MapView extends View {
-    public List<Drawer> reflectedObjects;
+    public List<DrawableGeoList> reflectedObjects;
     private float scale = 1, dX, dY;
     private OnTouchListener onTouchListener;
     private boolean init = false;
@@ -49,13 +45,11 @@ public class MapView extends View {
         }
         if (reflectedObjects != null) {
             canvas.translate(dX, dY);
-            for (Drawer reflectedObject : reflectedObjects) {
-                for (GeoObject geoObject : reflectedObject.geoObjects) {
-                    for (Path path : geoObject.getPaths()) {
-                        canvas.drawPath(path, reflectedObject.paintFill);
-                        canvas.drawPath(path, reflectedObject.paintBorder);
-                    }
-                }
+            for (DrawableGeoList reflectedObject : reflectedObjects) {
+                reflectedObject.drawSquares(canvas);
+            }
+            for (DrawableGeoList reflectedObject : reflectedObjects) {
+                reflectedObject.drawPoints(canvas);
             }
         }
     }
@@ -81,7 +75,7 @@ public class MapView extends View {
         invalidate();
     }
 
-    public void addDrawer(Drawer drawer) {
+    public void addDrawer(DrawableGeoList drawer) {
         reflectedObjects.add(drawer);
     }
 
@@ -126,14 +120,3 @@ public class MapView extends View {
     }
 }
 
-class Drawer {
-    List<GeoObject> geoObjects;
-    Paint paintFill;
-    Paint paintBorder;
-
-    public Drawer(List<GeoObject> geoObjects, Paint paintBorder, Paint paintFill) {
-        this.geoObjects = geoObjects;
-        this.paintFill = paintFill;
-        this.paintBorder = paintBorder;
-    }
-}

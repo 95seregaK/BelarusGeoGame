@@ -1,14 +1,14 @@
 package com.example.belarusgeogame.geoobjects;
 
 import android.graphics.Path;
+import android.graphics.PointF;
 
 import com.example.belarusgeogame.geometries.Geometry;
-
-import java.util.List;
+import com.example.belarusgeogame.geometries.PointG;
 
 public abstract class GeoObject {
-    protected List<Path> paths;
     protected Geometry geometry;
+    protected PointG centre;
     private String name;
 
     public GeoObject(String name) {
@@ -25,7 +25,7 @@ public abstract class GeoObject {
 
     public void scale(float scale) {
         geometry.scale(scale);
-        paths = geometry.computePath();
+        centre.scale(scale);
     }
 
     public Geometry getGeometry() {
@@ -34,11 +34,14 @@ public abstract class GeoObject {
 
     public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
-        paths = geometry.computePath();
+        centre = geometry.computeCentre();
     }
 
-    public List<Path> getPaths() {
-        return paths;
+    public boolean displayedAsPoint() {
+        return geometry.isTouchable();
     }
 
+    public PointG getCentre() {
+        return centre;
+    }
 }

@@ -7,7 +7,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PolygonG  extends Pointable {
+public class PolygonG extends Geometry {
     private static final float MIN_SQUARE = 400;
     private int pointCount;
     private float square;
@@ -17,7 +17,7 @@ public class PolygonG  extends Pointable {
     public PolygonG(List<PointF[]> polygons) {
         this.polygons = polygons;
         square = computeSquare();
-        computeCentre();
+        paths = computePath();
     }
 
     public static boolean pip(PointF p, PointF[] polygon) {
@@ -37,7 +37,7 @@ public class PolygonG  extends Pointable {
     }
 
     @Override
-    public void computeCentre() {
+    public PointG computeCentre() {
         double x = 0, y = 0;
         int n = 0;
         for (PointF[] polygon : polygons) {
@@ -49,7 +49,7 @@ public class PolygonG  extends Pointable {
         }
         x /= n;
         y /= n;
-        centre.setPosition(new PointF((float) x, (float) y));
+        return new PointG(new PointF((float) x, (float) y));
     }
 
     @Override
@@ -61,7 +61,7 @@ public class PolygonG  extends Pointable {
             }
         }
         square = computeSquare();
-        centre.scale(sc);
+        paths = computePath();
     }
 
     private float computeSquare() {
@@ -78,7 +78,7 @@ public class PolygonG  extends Pointable {
     }
 
     @Override
-    public List<Path> computePath() {
+    protected List<Path> computePath() {
         List<Path> paths = new ArrayList<>();
         Path path = null;
         PointF[] lastPolygon = null;
@@ -95,9 +95,6 @@ public class PolygonG  extends Pointable {
                 //Log.d("coordinates", polygon[i].x + " " + polygon[i].y);
             }
         }
-        if (reflectedAsPoint()) {
-            paths.add(centre.computePath().get(0));
-        }
         Log.d("Square", "square = " + computeSquare());
         return paths;
     }
@@ -105,8 +102,6 @@ public class PolygonG  extends Pointable {
     @Override
     public boolean contains(PointF p) {
         int s = 0;
-        if (reflectedAsPoint() && centre.contains(p))
-            return true;
         for (PointF[] polygon : polygons) {
             if (pip(p, polygon)) s++;
         }
@@ -114,7 +109,7 @@ public class PolygonG  extends Pointable {
     }
 
     @Override
-    public boolean reflectedAsPoint() {
+    public boolean isTouchable() {
         return square < MIN_SQUARE;
     }
 
