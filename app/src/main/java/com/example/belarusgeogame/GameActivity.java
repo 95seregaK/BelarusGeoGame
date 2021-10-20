@@ -18,7 +18,7 @@ public class GameActivity extends AppCompatActivity {
     private TextView textCurrentGeoObject;
     private List<GeoObject> geoObjects;
     private Game game;
-    private int fileId = R.raw.world_m;
+    private int fileId = R.raw.usa;
 
 
     @Override
@@ -38,7 +38,8 @@ public class GameActivity extends AppCompatActivity {
         geoObjects = new ArrayList<>();
         GeoObjectReader reader = new GeoObjectReader();
         try {
-            reader.readGeoObjects(getResources().openRawResource(fileId), geoObjects);
+            reader.readGeoObjects(getResources().openRawResource(fileId),"STATE_NAME", geoObjects);
+            reader.readGeoObjects(getResources().openRawResource(R.raw.usa_state_capitals),"name", geoObjects);
         } catch (Exception e) {
             Log.d("MyException", e.getMessage());
             e.printStackTrace();

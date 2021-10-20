@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GeoObjectReader {
-    private static final String STRING_NAME = /*"STATE_NAME"*/"admin";
+    private static final String STRING_NAME = "name"/*"STATE_NAME"*//*"admin"*/;
     private static final String STRING_TYPE = "type";
     private static float scale = 1;
     /*private static float la0 = (float) toRad(27.5);
@@ -109,18 +109,18 @@ public class GeoObjectReader {
         return new PointG(p);
     }
 
-    public void readGeoObjects(InputStream stream, List<GeoObject> geoObjects) throws JSONException, IOException {
+    public void readGeoObjects(InputStream stream, String nameString, List<GeoObject> geoObjects) throws JSONException, IOException {
         GeoJSONObject geoJSON = GeoJSON.parse(stream);
         FeatureCollection featureCollection = (FeatureCollection) (geoJSON);
         List<Feature> features = featureCollection.getFeatures();
         for (Feature feature : features) {
-            String type = feature.getProperties().getString(STRING_TYPE);
-            String name = feature.getProperties().getString(STRING_NAME);
-            Log.d("Country", name + " " + type);
-            if (type.compareTo("Sovereign country") == 0 || type.compareTo("Country") == 0) {
-                GeoObject geoObject = new Country(feature.getProperties().getString(STRING_NAME));
+           // String type = feature.getProperties().getString(STRING_TYPE);
+            String name = feature.getProperties().getString(nameString);
+            Log.d("Country", name/* + " " + type*/);
+            if (true /*type.compareTo("Sovereign country") == 0 || type.compareTo("Country") == 0*/) {
+                GeoObject geoObject = new Country(feature.getProperties().getString(nameString));
                 Geometry geometry = null;
-                if (feature.getGeometry().getType() == "PointG") {
+                if (feature.getGeometry().getType() == "Point") {
                     geometry = readPoint((Point) feature.getGeometry());
                 } else if (feature.getGeometry().getType() == "Polygon") {
                     geometry = readPolygon((Polygon) feature.getGeometry());

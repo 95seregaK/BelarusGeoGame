@@ -12,8 +12,9 @@ public class PointG extends Geometry {
 
     public PointG(PointF p) {
         point = new PointF(p.x, p.y);
-        paths=computePath();
+        paths = computePath();
     }
+
 
     @Override
     public void scale(float scale) {
@@ -45,7 +46,7 @@ public class PointG extends Geometry {
 
     @Override
     public PointG computeCentre() {
-        return null;
+        return new PointG(point);
     }
 
     public void setPosition(PointF p) {
